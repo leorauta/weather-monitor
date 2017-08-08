@@ -1,0 +1,25 @@
+{
+  "name": "weather-monitor",
+  "version": "1.0.0",
+  "description": "REST application for collecting data from weather stations",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jmdalmolin/weather-monitor.git"
+  },
+  "author": "jmdalmolin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jmdalmolin/weather-monitor/issues"
+  },
+  "homepage": "https://github.com/jmdalmolin/weather-monitor#readme",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "ejs": "^2.5.7",
+    "express": "^4.15.3",
+    "mongoose": "^4.11.5"
+  }
+}
