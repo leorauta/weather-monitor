@@ -33,5 +33,8 @@ module.exports.getStationById = function (id) {
 };
 
 module.exports.getStationList = function () {
-
+    return StationModel.find(function (err, station) {
+        if (err) return handleError(err);
+        // return station; // Space Ghost is a talk show host.
+    })
 };

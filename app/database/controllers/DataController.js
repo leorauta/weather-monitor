@@ -1,14 +1,14 @@
 var DataModel = require('../models/DataModel');
-var Schema = require('mongoose').Schema;
+var Mongoose = require('mongoose');
 
 module.exports.insertData = function (data) {
     // var date = Date(data.collect_date);
     // console.log(date);
     var model = new DataModel({
         //_id: undefined,
-        // _station_id: Schema.Types.ObjectId(data.station),
+        _station_id: data.station,
 
-        collect_date: ISODate("2012-12-19T06:01:17.171Z"), //date of collect send from the weather station
+        collect_date: new Date(), //example "2012-12-19T06:01:17Z"
         // storage_date: {type: Date, default: Date.now }, //date of storage on the database
 
         temperature: data.temperature, //degrees Celsius

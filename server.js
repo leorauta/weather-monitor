@@ -1,6 +1,6 @@
-var express      = require('express');        // call express
-var app         = express();                 // define our app using express
-var bodyParser  = require('body-parser');
+var express = require('express');        // call express
+var app = express();                 // define our app using express
+var bodyParser = require('body-parser');
 
 var dataController = require('./app/database/controllers/DataController');
 var stationController = require('./app/database/controllers/StationController');
@@ -8,81 +8,84 @@ var database = require("./app/database/Database");
 
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({extended: true}));
 
 
 var root_url = '/weathermonitor';
-var port = process.env.PORT || 2323;        // set our port
-
+var port = process.env.PORT || 2323;       // set our port
 
 var router = express.Router();
 
-router.route('/')
-
-    .options(function(req, res) {
-        res.json(
-
-        )
-    });
+// router.route('/')
+//     .options(function (req, res) {
+//         res.json(
+//
+//         )
+//     });
 
 router.route('/data')
-    .post(function(req, res) {
+    .post(function (req, res) {
         var log = '';
         var count = 0;
         var currentdate = new Date();
         log += currentdate.toISOString();
-
-        if (req.body.collect_date !== undefined) {
-            log += ' collect_date: ' + req.body.name;
-            count++;
-        }
-        if (req.body.storage_date !== undefined){
-            log += ' storage_date: ' + req.body.storage_date;
-            count++;
-        }
-        if(req.body.temperature !== undefined) {
-            log += ' temperature: ' + req.body.temperature;
-            count++;
-        }
-        if(req.body.atmospheric_pressure !== undefined) {
-            log += ' atmospheric_pressure: ' + req.body.atmospheric_pressure;
-            count++;
-        }
-        if(req.body.relative_humidity !== undefined) {
-            log += ' relative_humidity: ' + req.body.relative_humidity;
-            count++;
-        }
-        if(req.body.wind_speed !== undefined) {
-            log += ' wind_speed: ' + req.body.wind_speed;
-            count++;
-        }
-        if(req.body.wind_direction !== undefined) {
-            log += ' wind_direction: ' + req.body.wind_direction;
-            count++;
-        }
-        if(req.body.precipitation !== undefined) {
-            log += ' precipitation: ' + req.body.precipitation;
-            count++;
-        }
-        console.log(log);
-        if (count > 0) {
-            dataController.insertData(req.body);
-            res.json(req.body);
-        } else {
-            var response = {
-                warning: "Send at least one value"
+        if (req.body.station !== undefined) {
+            var station = stationController.getStationById(req.body.station);
+            if (station !== undefined) {
+                if (req.body.collect_date !== undefined) {
+                    log += ' collect_date: ' + req.body.name;
+                    count++;
+                }
+                if (req.body.storage_date !== undefined) {
+                    log += ' storage_date: ' + req.body.storage_date;
+                    count++;
+                }
+                if (req.body.temperature !== undefined) {
+                    log += ' temperature: ' + req.body.temperature;
+                    count++;
+                }
+                if (req.body.atmospheric_pressure !== undefined) {
+                    log += ' atmospheric_pressure: ' + req.body.atmospheric_pressure;
+                    count++;
+                }
+                if (req.body.relative_humidity !== undefined) {
+                    log += ' relative_humidity: ' + req.body.relative_humidity;
+                    count++;
+                }
+                if (req.body.wind_speed !== undefined) {
+                    log += ' wind_speed: ' + req.body.wind_speed;
+                    count++;
+                }
+                if (req.body.wind_direction !== undefined) {
+                    log += ' wind_direction: ' + req.body.wind_direction;
+                    count++;
+                }
+                if (req.body.precipitation !== undefined) {
+                    log += ' precipitation: ' + req.body.precipitation;
+                    count++;
+                }
+                console.log(log);
+                if (count > 0) {
+                    dataController.insertData(req.body);
+                    res.json(req.body);
+                } else {
+                    res.json({warning: "Send at least one value"});
+                }
+            } else {
+                res.json({warning: "Non-existent station"});
             }
-            res.json(response);
+        } else {
+            res.json({warning: "Send station code"});
         }
     })
 
-    .get(function(req, res) {
+    .get(function (req, res) {
 
     });
 
 router.route('/station')
 
-    .post(function(req, res) {
+    .post(function (req, res) {
         var log = '';
         var count = 0;
         log += new Date().toISOString();
@@ -94,72 +97,76 @@ router.route('/station')
             count++;
         }
 
-        if (req.body.description !== undefined){
+        if (req.body.description !== undefined) {
             log += ', description: \"' + req.body.description + '\"';
         }
 
-        if(req.body.longitude !== undefined) {
+        if (req.body.longitude !== undefined) {
             log += ', longitude: ' + req.body.longitude;
         } else if (count === 0) {
             res.json({warning: "Send longitude value"});
             count++;
         }
 
-        if(req.body.latitude !== undefined) {
+        if (req.body.latitude !== undefined) {
             log += ', latitude: ' + req.body.latitude;
-        } else if (count === 0){
+        } else if (count === 0) {
             res.json({warning: "Send latitude value"});
             count++;
         }
 
-        if(req.body.barometer !== undefined) {
+        if (req.body.termometer !== undefined) {
+            log += ', termometer: \"' + req.body.termometer + '\"';
+        }
+        if (req.body.barometer !== undefined) {
             log += ', barometer: \"' + req.body.barometer + '\"';
         }
-        if(req.body.humidity !== undefined) {
+        if (req.body.humidity !== undefined) {
             log += ', humidity: \"' + req.body.humidity + '\"';
         }
-        if(req.body.anemometer !== undefined) {
+        if (req.body.anemometer !== undefined) {
             log += ', anemometer: \"' + req.body.anemometer + '\"';
         }
-        if(req.body.windsock !== undefined) {
+        if (req.body.windsock !== undefined) {
             log += ', windsock: \"' + req.body.windsock + '\"';
         }
-        if(req.body.pluviometer !== undefined) {
+        if (req.body.pluviometer !== undefined) {
             log += ', pluviometer: \"' + req.body.pluviometer + '\"';
         }
 
         console.log(log);
         if (count === 0) {
             stationController.insertStation(req.body).then(function (station) {
-                var hash = {hash: station._id}
-                res.json(hash);
+                res.json({hash: station._id});
             });
         } else {
-            response = {
-                warning: "Send at least one value"
-            }
-            res.json(response);
+            res.json({warning: "Send at least one value"});
         }
 
-        // stationController.insertStation(req.body);
-        // console.log(req);
-        // res.json(req.body);
+        stationController.insertStation(req.body);
+        console.log(req);
+        res.json(req.body);
     })
 
-    .get(function(req, res) {
+    .get(function (req, res) {
 
     });
 
 router.route('/station/list')
-
-    .get(function(req, res) {
+    .get(function (req, res) {
+        stationController.getStationList().then(function (stations) {
+            res.json(stations);
+        })
+            .catch(function (e) {
+                res.json({error: "Error while processing your request"});
+            })
 
     });
 
 try {
     app.use(root_url, router);
     app.listen(port);
-} catch (e){
+} catch (e) {
 
 }
 console.log('Magic happens on port ' + port);
