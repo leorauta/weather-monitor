@@ -4,6 +4,8 @@ var Schema = mongoose.Schema;
 var StationSchema = new Schema({
     _id: Schema.Types.ObjectId, //id from the origin station
 
+    id: Schema.Types.Number,
+
     name: Schema.Types.String, //date of collect send from the weather station
     description:  Schema.Types.String, //description
 
@@ -15,7 +17,7 @@ var StationSchema = new Schema({
     humidity: Schema.Types.String,  //percentage
     anemometer: Schema.Types.String, //wind_speed
     windsock: Schema.Types.String, //wind_direction
-    pluviometer: Schema.Types.String, //precipitation
+    pluviometer: Schema.Types.String //precipitation
 });
 
 module.exports = mongoose.model('Station', StationSchema);

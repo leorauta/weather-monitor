@@ -1,6 +1,7 @@
 var express = require('express');        // call express
 var app = express();                 // define our app using express
 var bodyParser = require('body-parser');
+var cors = require('cors');
 
 var dataController = require('./app/database/controllers/DataController');
 var stationController = require('./app/database/controllers/StationController');
@@ -9,10 +10,10 @@ var database = require("./app/database/Database");
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
-
+app.use(cors());
 
 var root_url = '/weathermonitor';
-var port = process.env.PORT || 2323;       // set our port
+var port = process.env.PORT || 2324;       // set our port
 
 var router = express.Router();
 
@@ -25,6 +26,7 @@ var router = express.Router();
 
 router.route('/data')
     .post(function (req, res) {
+        console.log(req.body);
         var log = '';
         var count = 0;
         var currentdate = new Date();
@@ -67,7 +69,7 @@ router.route('/data')
                 console.log(log);
                 if (count > 0) {
                     dataController.insertData(req.body);
-                    res.json(req.body);
+                    res.json({});
                 } else {
                     res.json({warning: "Send at least one value"});
                 }
@@ -80,7 +82,14 @@ router.route('/data')
     })
 
     .get(function (req, res) {
-
+        // console.log(req.query.startDate);
+        // console.log(req.query.endDate);
+        // console.log(req.query.limit);
+        dataController.getData(req.query.startDate, req.query.endDate, req.query.limit).then(function (data) {
+            // console.log(data);
+            data.forEach(function (t) { t._id = undefined});
+            res.json(data);
+        })
     });
 
 router.route('/station')
@@ -89,6 +98,12 @@ router.route('/station')
         var log = '';
         var count = 0;
         log += new Date().toISOString();
+
+        var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        if (ip.substr(0, 7) == "::ffff:") {
+            ip = ip.substr(7)
+        }
+        log += " IP: " + ip;
 
         if (req.body.name !== undefined && req.body.name.trim() !== '') {
             log += ' name: \"' + req.body.name + '\"';
@@ -142,14 +157,16 @@ router.route('/station')
         } else {
             res.json({warning: "Send at least one value"});
         }
-
-        stationController.insertStation(req.body);
-        console.log(req);
-        res.json(req.body);
     })
 
     .get(function (req, res) {
-
+        console.log(req.hash);
+        stationController.getStationById(req.hash).then(function (station) {
+            res.json(station);
+        })
+            .catch(function (e) {
+                res.json({error: "Error while processing your request"});
+            })
     });
 
 router.route('/station/list')
@@ -167,6 +184,6 @@ try {
     app.use(root_url, router);
     app.listen(port);
 } catch (e) {
-
+    log.error(e);
 }
 console.log('Magic happens on port ' + port);

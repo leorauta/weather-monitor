@@ -1,15 +1,10 @@
 var DataModel = require('../models/DataModel');
-var Mongoose = require('mongoose');
 
 module.exports.insertData = function (data) {
-    // var date = Date(data.collect_date);
-    // console.log(date);
     var model = new DataModel({
-        //_id: undefined,
         _station_id: data.station,
 
         collect_date: new Date(), //example "2012-12-19T06:01:17Z"
-        // storage_date: {type: Date, default: Date.now }, //date of storage on the database
 
         temperature: data.temperature, //degrees Celsius
         atmospheric_pressure: data.atmospheric_pressure, //millimetres of mercury
@@ -23,6 +18,22 @@ module.exports.insertData = function (data) {
     });
 };
 
-module.exports.getData = function () {
+module.exports.getData = function (startD, endD, limit) {
+    var startDate = startD !== undefined ? new Date(startD) : undefined;
+    var endDate = endD !== undefined ? new Date(endD) : new Date();
+    limit = !isNaN(limit) ? parseInt(limit) : 10;
 
+
+    var query = {
+        storage_date: {$gt: startDate, $lt: endDate}
+    };
+    var sort = {
+        storage_date: 'desc'
+    };
+
+    var fields = '_station_id storage_date temperature atmospheric_pressure relative_humidity wind_speed wind_direction precipitation';
+
+    return DataModel.find(query, fields ,function (err, data) {
+        if (err) return console.error(err);
+    }).sort(sort).limit(limit);
 };

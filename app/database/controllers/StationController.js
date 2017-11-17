@@ -26,9 +26,9 @@ module.exports.insertStation = function (data) {
 };
 
 module.exports.getStationById = function (id) {
-    StationModel.findOne({ '_id': id}, function (err, station) {
+    return StationModel.findOne({ '_id': id}, function (err, station) {
         if (err) return handleError(err);
-        console.log(station) // Space Ghost is a talk show host.
+        //console.log(station) // Space Ghost is a talk show host.
     })
 };
 

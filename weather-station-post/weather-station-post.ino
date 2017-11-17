@@ -1,3 +1,6 @@
+#include <DHT.h>
+#include <DHT_U.h>
+
 #include <SPI.h>
 #include <Dhcp.h>
 #include <EthernetUdp.h>
@@ -7,15 +10,33 @@
 #include <Ethernet.h>
 
 
-String ID = "1";
+String HASH = "59e9e6d083747507612e8ab2";
+
+
+IPAddress ipServer(10,61,2,61);
 
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
-IPAddress ip(10,61,2,47);
+byte dnServer[] = {8, 8, 8, 8};
+// the router's gateway address:
+byte gateway[] = {10,60,0,254};
+// the subnet:
+byte subnet[] = {255, 255, 0, 0};
+
+//the IP address is dependent on your network
+byte ip[] = {10,60,104,174};
+
 
 EthernetClient client;
 
 unsigned long lastConnectionTime = 0;
 const unsigned long postingInterval = 10L * 1000L;
+
+
+// set Things here
+
+#define DHTPIN A1 // pino que estamos conectado
+#define DHTTYPE DHT11 // DHT 11
+DHT dht(DHTPIN, DHTTYPE);
 
 void setup() {
   
@@ -29,18 +50,39 @@ void setup() {
   digitalWrite(4,HIGH);
 
   Serial.print(F("Starting ethernet..."));
+  //Ethernet.begin(mac, ip, dnServer, gateway, subnet);
   if(!Ethernet.begin(mac))
     Serial.println(F("Failed"));
-  else Serial.println(Ethernet.localIP());
+  else{
+  Serial.println(Ethernet.localIP());
   Serial.println(F("Ready"));
+  }
+  // Setup Sensors
+
+  dht.begin();
+
+  
   delay(1000);
 }
 
 void loop() {
   float temperature = -100000, relative_humidity=-100000, atmospheric_pressure=-100000, wind_speed=-100000, wind_direction=-100000, precipitation = -100000;
   
-  temperature = random(10,30);
-  relative_humidity = random(0,100);
+  //Read and set Values
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  // testa se retorno é valido, caso contrário algo está errado.
+  if (isnan(t) || isnan(h)) {
+    Serial.println("Failed to read from DHT");
+  } else {
+    relative_humidity = h;
+    temperature = t;
+  }
+
+
+
+
+
   
   sendData(temperature,relative_humidity,atmospheric_pressure, wind_speed, wind_direction,precipitation);
   
@@ -53,7 +95,7 @@ void loop() {
 
 void sendData(float temperature, float relative_humidity, float atmospheric_pressure, float wind_speed, float wind_direction, float precipitation){
   String PostData = "{";
-  PostData += "\"id\":" + ID;
+  PostData += "\"station\":\"" + HASH + "\"";
   if(temperature != -100000){
      PostData += ",\"temperature\":";
      PostData.concat(temperature);
@@ -74,12 +116,13 @@ void sendData(float temperature, float relative_humidity, float atmospheric_pres
      PostData.concat(precipitation);
   }
   PostData += "}";
-  if(!PostData.equals("{}")){
+  if(!PostData.equals("{\"station\":\"" + HASH + "\"}")){
     client.stop();
+    client.setTimeout(300000);
     Serial.print(PostData + "... ");
-    if(client.connect(ip, 2323)) {
+    if(client.connect(ipServer, 2324)) {
       client.println("POST /weathermonitor/data HTTP/1.1");
-      client.println("Host: 10.61.2.47");
+      client.println("Host: 10.61.2.61");
       client.println("User-Agent: Arduino/1.0");
       client.println("Connection: close");
       client.println("Content-Type: application/json");
