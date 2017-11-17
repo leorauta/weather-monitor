@@ -1,8 +1,10 @@
 var DataModel = require('../models/DataModel');
 
-module.exports.insertData = function (data) {
+module.exports.insertData = function (data, index) {
     var model = new DataModel({
         _station_id: data.station,
+
+        station: index,
 
         collect_date: new Date(), //example "2012-12-19T06:01:17Z"
 
@@ -18,20 +20,32 @@ module.exports.insertData = function (data) {
     });
 };
 
-module.exports.getData = function (startD, endD, limit) {
+module.exports.getData = function (stations, startD, endD, limit) {
     var startDate = startD !== undefined ? new Date(startD) : undefined;
-    var endDate = endD !== undefined ? new Date(endD) : new Date();
+    var endDate = endD !== undefined ? new Date(endD) : undefined;
     limit = !isNaN(limit) ? parseInt(limit) : 10;
 
 
-    var query = {
-        storage_date: {$gt: startDate, $lt: endDate}
-    };
+    var query = {};
+
+    if (startDate !== undefined) {
+        if (endDate !== undefined){
+            query.storage_date = {$gt: startDate, $lt: endDate};
+        } else {
+            query.storage_date = {$gt: startDate};
+        }
+    }
+    if (stations !== undefined){
+        query.station =  {$in: stations}
+    }
+
+    console.log(query);
+
     var sort = {
         storage_date: 'desc'
     };
 
-    var fields = '_station_id storage_date temperature atmospheric_pressure relative_humidity wind_speed wind_direction precipitation';
+    var fields = 'station storage_date temperature atmospheric_pressure relative_humidity wind_speed wind_direction precipitation';
 
     return DataModel.find(query, fields ,function (err, data) {
         if (err) return console.error(err);

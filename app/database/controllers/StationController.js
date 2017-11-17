@@ -3,10 +3,9 @@ var Mongoose = require('mongoose');
 // var SHA256 = require("crypto-js/sha256");
 
 module.exports.insertStation = function (data) {
-    // var identifier = SHA256(new Date.now().toString() + (data.longitude * data.latitude));
     var model = new StationModel({
         _id: new Mongoose.Types.ObjectId(), //id from the origin station
-
+        index: data.index,
         name: data.name, //date of collect send from the weather station
         description: data.description, //description
 
@@ -32,9 +31,24 @@ module.exports.getStationById = function (id) {
     })
 };
 
+// module.exports.getStationByIndex = function (ind) {
+//     console.log(ind);
+//     var query = StationModel.findOne({ index: ind});
+//     return query.exec(function (err, station) {
+//         if (err) {
+//             console.error(err);
+//             return;
+//         }
+//         return station[0];
+//     })
+// };
+
 module.exports.getStationList = function () {
+    var sort = {
+        index: 'asc'
+    };
     return StationModel.find(function (err, station) {
-        if (err) return handleError(err);
-        // return station; // Space Ghost is a talk show host.
-    })
+        if (err) return console.error(err);
+
+    }).sort(sort);
 };

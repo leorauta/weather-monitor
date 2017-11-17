@@ -3,7 +3,7 @@ var Schema       = mongoose.Schema;
 
 var DataSchema   = new Schema({
     _station_id: { type: Schema.Types.ObjectId, ref: 'Station' }, //id from the origin station
-
+    station: Schema.Types.Number,
     collect_date: {type: Date}, //date of collect send from the weather station
     storage_date: {type: Date, default: Date.now }, //date of storage on the database
 

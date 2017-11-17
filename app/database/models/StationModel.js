@@ -4,7 +4,7 @@ var Schema = mongoose.Schema;
 var StationSchema = new Schema({
     _id: Schema.Types.ObjectId, //id from the origin station
 
-    id: Schema.Types.Number,
+    index: Schema.Types.Number,
 
     name: Schema.Types.String, //date of collect send from the weather station
     description:  Schema.Types.String, //description
