@@ -18,13 +18,6 @@ var port = process.env.PORT || 2324;       // set our port
 
 var router = express.Router();
 
-// router.route('/')
-//     .options(function (req, res) {
-//         res.json(
-//
-//         )
-//     });
-
 router.route('/data')
     .post(function (req, res) {
             console.log(req.body);
@@ -70,8 +63,13 @@ router.route('/data')
                         }
                         console.log(log);
                         if (count > 0) {
-                            dataController.insertData(req.body, station.index);
-                            res.json({});
+                            idController.getId('data').then(function (id) {
+                                var index = (id !== undefined && id !== null) ? id.number : 0;
+                                idController.updateId('data').then(function () {
+                                    dataController.insertData(req.body, station.index, index);
+                                    res.json({id: index});
+                                });
+                            });
                         } else {
                             res.json({warning: "Send at least one value"});
                         }
@@ -95,10 +93,23 @@ router.route('/data')
             }
         }
         dataController.getData(req.query.stations, req.query.startDate, req.query.endDate, req.query.limit).then(function (data) {
-            data.forEach(function (t) {
-                t._id = undefined
-            });
-            res.json(data);
+            var list = [];
+            for (var i = 0; i < data.length; i++) {
+                list[i] = {};
+                list[i].id = data[i].index;
+                list[i].station = data[i].station;
+
+                list[i].collect_date = data[i].collect_date;
+                list[i].storage_date = data[i].storage_date;
+
+                list[i].temperature = data[i].temperature;
+                list[i].atmospheric_pressure = data[i].atmospheric_pressure;
+                list[i].relative_humidity = data[i].relative_humidity;
+                list[i].wind_speed = data[i].wind_speed;
+                list[i].wind_direction = data[i].wind_direction;
+                list[i].precipitation = data[i].precipitation;
+            }
+            res.json(list);
         })
     });
 
@@ -140,14 +151,14 @@ router.route('/station')
             count++;
         }
 
-        if (req.body.termometer !== undefined) {
-            log += ', termometer: \"' + req.body.termometer + '\"';
+        if (req.body.thermometer !== undefined) {
+            log += ', thermometer: \"' + req.body.thermometer + '\"';
         }
         if (req.body.barometer !== undefined) {
             log += ', barometer: \"' + req.body.barometer + '\"';
         }
-        if (req.body.humidity !== undefined) {
-            log += ', humidity: \"' + req.body.humidity + '\"';
+        if (req.body.hygrometer !== undefined) {
+            log += ', hygrometer: \"' + req.body.hygrometer + '\"';
         }
         if (req.body.anemometer !== undefined) {
             log += ', anemometer: \"' + req.body.anemometer + '\"';
@@ -162,23 +173,12 @@ router.route('/station')
         console.log(log);
         if (count === 0) {
             idController.getId('station').then(function (id) {
-                console.log(id);
-                if (id === undefined || id === null) {
-                    idController.updateId('station').then(function () {
-                        req.body.index = 0;
-                        stationController.insertStation(req.body).then(function (station) {
-                            res.json({hash: station._id});
-                        });
-                        console.log(req.body.index)
-                    })
-                } else {
-                    req.body.index = id.number;
-                    idController.updateId('station').then(function () {
-                        stationController.insertStation(req.body).then(function (station) {
-                            res.json({hash: station._id});
-                        });
+                req.body.index = id !== undefined && id !== null ? id.number : 0;
+                idController.updateId('station').then(function () {
+                    stationController.insertStation(req.body).then(function (station) {
+                        res.json({hash: station._id, id: station.index});
                     });
-                }
+                });
             });
 
         } else {
@@ -187,11 +187,9 @@ router.route('/station')
     })
 
     .get(function (req, res) {
-        console.log(req.query.id);
         var flag = false;
         stationController.getStationList().then(function (stations) {
             if (stations !== null && stations !== undefined && stations.length > 0) {
-                console.log(stations);
                 for (var i = 0; i < stations.length; i++) {
                     if (stations[i].index === req.query.id - 0) {
                         var returnStation = {
@@ -202,9 +200,9 @@ router.route('/station')
                             longitude: stations[i].longitude, //date of storage on the database
                             latitude: stations[i].latitude, //degrees Celsius
 
-                            termometer: stations[i].termometer, //temperature
+                            thermometer: stations[i].thermometer, //temperature
                             barometer: stations[i].barometer, //pressure
-                            humidity: stations[i].humidity,  //percentage
+                            hygrometer: stations[i].hygrometer,  //percentage
                             anemometer: stations[i].anemometer, //wind_speed
                             windsock: stations[i].windsock, //wind_direction
                             pluviometer: stations[i].pluviometer //precipitation
@@ -236,9 +234,9 @@ router.route('/station/list')
                     longitude: stations[i].longitude, //date of storage on the database
                     latitude: stations[i].latitude, //degrees Celsius
 
-                    termometer: stations[i].termometer, //temperature
+                    thermometer: stations[i].thermometer, //temperature
                     barometer: stations[i].barometer, //pressure
-                    humidity: stations[i].humidity,  //percentage
+                    hygrometer: stations[i].hygrometer,  //percentage
                     anemometer: stations[i].anemometer, //wind_speed
                     windsock: stations[i].windsock, //wind_direction
                     pluviometer: stations[i].pluviometer //precipitation
@@ -248,7 +246,7 @@ router.route('/station/list')
             res.json(list);
         })
             .catch(function (e) {
-                console.log(e)
+                console.error(e);
                 res.json({error: "Error while processing your request"});
             })
 

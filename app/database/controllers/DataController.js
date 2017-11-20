@@ -1,12 +1,12 @@
 var DataModel = require('../models/DataModel');
 
-module.exports.insertData = function (data, index) {
+module.exports.insertData = function (data, indexStation, index) {
     var model = new DataModel({
         _station_id: data.station,
+        index: index,
+        station: indexStation,
 
-        station: index,
-
-        collect_date: new Date(), //example "2012-12-19T06:01:17Z"
+        collect_date: data.collect_date !== undefined ? new Date(data.collect_date) : undefined, //example "2012-12-19T06:01:17Z"
 
         temperature: data.temperature, //degrees Celsius
         atmospheric_pressure: data.atmospheric_pressure, //millimetres of mercury
@@ -39,13 +39,11 @@ module.exports.getData = function (stations, startD, endD, limit) {
         query.station =  {$in: stations}
     }
 
-    console.log(query);
-
     var sort = {
         storage_date: 'desc'
     };
 
-    var fields = 'station storage_date temperature atmospheric_pressure relative_humidity wind_speed wind_direction precipitation';
+    var fields = 'index station storage_date collect_date temperature atmospheric_pressure relative_humidity wind_speed wind_direction precipitation';
 
     return DataModel.find(query, fields ,function (err, data) {
         if (err) return console.error(err);
