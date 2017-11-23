@@ -20,7 +20,7 @@ module.exports.insertData = function (data, indexStation, index) {
     });
 };
 
-module.exports.getData = function (stations, startD, endD, limit) {
+module.exports.getData = function (stations, startD, endD, limit, referenceId) {
     var startDate = startD !== undefined ? new Date(startD) : undefined;
     var endDate = endD !== undefined ? new Date(endD) : undefined;
     limit = !isNaN(limit) ? parseInt(limit) : 10;
@@ -34,9 +34,15 @@ module.exports.getData = function (stations, startD, endD, limit) {
         } else {
             query.storage_date = {$gt: startDate};
         }
+    } else if (endDate !== undefined){
+        query.storage_date = {$lt: endDate};
     }
     if (stations !== undefined){
         query.station =  {$in: stations}
+    }
+
+    if (referenceId !== undefined){
+        query.index = {$gt: referenceId};
     }
 
     var sort = {

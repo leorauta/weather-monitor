@@ -12,3 +12,6 @@ db.once('connect', function() {
 });
 
 module.exports = db;
+module.exports.dataController = require('./controllers/DataController');
+module.exports.stationController = require('./controllers/StationController');
+module.exports.idController = require('./controllers/IdController');

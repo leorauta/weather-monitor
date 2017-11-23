@@ -3,10 +3,8 @@ var app = express();                 // define our app using express
 var bodyParser = require('body-parser');
 var cors = require('cors');
 
-var dataController = require('./app/database/controllers/DataController');
-var stationController = require('./app/database/controllers/StationController');
-var idController = require('./app/database/controllers/IdController');
-var database = require("./app/database/Database");
+
+var db = require("./app/database/Database");
 
 
 app.use(bodyParser.json());
@@ -20,14 +18,12 @@ var router = express.Router();
 
 router.route('/data')
     .post(function (req, res) {
-            console.log(req.body);
             var log = '';
             var count = 0;
             var currentdate = new Date();
             log += currentdate.toISOString();
             if (req.body.station !== undefined) {
-                stationController.getStationById(req.body.station).then(function (station) {
-                    console.log(station);
+                db.stationController.getStationById(req.body.station).then(function (station) {
                     if (station !== undefined && station !== null) {
                         if (req.body.collect_date !== undefined) {
                             log += ' collect_date: ' + req.body.name;
@@ -63,10 +59,10 @@ router.route('/data')
                         }
                         console.log(log);
                         if (count > 0) {
-                            idController.getId('data').then(function (id) {
+                            db.idController.getId('data').then(function (id) {
                                 var index = (id !== undefined && id !== null) ? id.number : 0;
-                                idController.updateId('data').then(function () {
-                                    dataController.insertData(req.body, station.index, index);
+                                db.idController.updateId('data').then(function () {
+                                    db.dataController.insertData(req.body, station.index, index);
                                     res.json({id: index});
                                 });
                             });
@@ -92,7 +88,7 @@ router.route('/data')
                 stations[i] = parseInt(req.query.stations[i])
             }
         }
-        dataController.getData(req.query.stations, req.query.startDate, req.query.endDate, req.query.limit).then(function (data) {
+        db.dataController.getData(req.query.stations, req.query.startDate, req.query.endDate, req.query.limit, req.query.referenceId).then(function (data) {
             var list = [];
             for (var i = 0; i < data.length; i++) {
                 list[i] = {};
@@ -172,10 +168,10 @@ router.route('/station')
 
         console.log(log);
         if (count === 0) {
-            idController.getId('station').then(function (id) {
+            db.idController.getId('station').then(function (id) {
                 req.body.index = id !== undefined && id !== null ? id.number : 0;
-                idController.updateId('station').then(function () {
-                    stationController.insertStation(req.body).then(function (station) {
+                db.idController.updateId('station').then(function () {
+                    db.stationController.insertStation(req.body).then(function (station) {
                         res.json({hash: station._id, id: station.index});
                     });
                 });
@@ -188,7 +184,7 @@ router.route('/station')
 
     .get(function (req, res) {
         var flag = false;
-        stationController.getStationList().then(function (stations) {
+        db.stationController.getStationList().then(function (stations) {
             if (stations !== null && stations !== undefined && stations.length > 0) {
                 for (var i = 0; i < stations.length; i++) {
                     if (stations[i].index === req.query.id - 0) {
@@ -223,7 +219,7 @@ router.route('/station')
 
 router.route('/station/list')
     .get(function (req, res) {
-        stationController.getStationList().then(function (stations) {
+        db.stationController.getStationList().then(function (stations) {
             var list = [];
             for (var i = 0; i < stations.length; i++) {
                 list[list.length] = {

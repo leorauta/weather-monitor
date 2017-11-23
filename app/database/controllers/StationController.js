@@ -11,7 +11,7 @@ module.exports.insertStation = function (data) {
         longitude: data.longitude, //date of storage on the database
         latitude: data.latitude, //degrees Celsius
 
-        termometer: data.termometer, //temperature
+        thermometer: data.thermometer, //temperature
         barometer: data.barometer, //pressure
         hygrometer: data.hygrometer,  //percentage
         anemometer: data.anemometer, //wind_speed
