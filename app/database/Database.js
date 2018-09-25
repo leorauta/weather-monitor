@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var Promise = require("bluebird");
-mongoose.connect('mongodb://localhost/weathermonitor',{useMongoClient: true});
+//mongoose.connect('mongodb://localhost/weathermonitor',{useMongoClient: true});
+mongoose.connect('mongodb://weathermonitor:weather2018@ds113703.mlab.com:13703/weathermonitor',{useMongoClient: true});
 
 mongoose.Promise = Promise;
 var db = mongoose.connection;
